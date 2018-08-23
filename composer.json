@@ -1,0 +1,28 @@
+{
+    "name": "darsyn/unboxer",
+    "description": "Simple utility to unbox complex data structures (objects) to native data types.",
+    "license": "MIT",
+    "keywords": ["unbox", "data"],
+    "type": "library",
+    "homepage": "https://github.com/darsyn/unboxer",
+    "authors": [
+        {
+            "name": "Zan Baldwin",
+            "email": "hello@zanbaldwin.com",
+            "homepage": "https://github.com/zanbaldwin"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Darsyn\\Unboxer\\": "src/"
+        }
+    },
+    "require": {
+        "php": ">=7.0"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Darsyn\\Unboxer\\Tests\\": "tests/"
+        }
+    }
+}

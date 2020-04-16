@@ -12,6 +12,7 @@ class Unboxer implements UnboxerInterface
         \DateTimeInterface::class => ['format', [\DateTimeInterface::RFC3339]],
         \DateTimeZone::class => ['getName'],
         \Throwable::class => ['getMessage'],
+        \JsonSerializable::class => ['jsonSerialize'],
         ArrayCollection::class => ['toArray'],
     ];
 

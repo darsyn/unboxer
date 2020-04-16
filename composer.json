@@ -1,8 +1,8 @@
 {
     "name": "darsyn/unboxer",
-    "description": "Simple utility to unbox complex data structures (objects) to native data types.",
+    "description": "Simple utility to unbox complex data structures (objects) to native data types, suitable for encoding into formats such as JSON, YAML, etc.",
     "license": "MIT",
-    "keywords": ["unbox", "data"],
+    "keywords": ["unbox", "complex", "data", "convert", "native"],
     "type": "library",
     "homepage": "https://github.com/darsyn/unboxer",
     "authors": [

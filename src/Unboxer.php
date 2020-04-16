@@ -73,7 +73,7 @@ class Unboxer implements UnboxerInterface
     }
 
     /**
-     * Extend this class and override this method, remembering to call parent::getKnownDataMethods(), to expand this
+     * Extend this class and override this method, remembering to merge parent::getKnownDataMethods(), to expand this
      * list of known data methods. Try sticking to just native PHP classes/interfaces, or classes defined in extensions.
      * It is preferable to modify or extend a class to implement UnboxableInterface instead.
      */
@@ -82,7 +82,7 @@ class Unboxer implements UnboxerInterface
         return self::$knownDataMethods;
     }
 
-    final protected function hasKnownDataMethod(object $data): ?string
+    final protected function hasKnownDataMethod($data): ?string
     {
         foreach (\array_keys($this->getKnownDataMethods()) as $interface) {
             if ($data instanceof $interface) {
@@ -92,7 +92,7 @@ class Unboxer implements UnboxerInterface
         return null;
     }
 
-    final protected function callKnownDataMethod(object $data, string $interface)
+    final protected function callKnownDataMethod($data, string $interface)
     {
         $callable = $this->getKnownDataMethods()[$interface] ?? null;
         [$method, $arguments] = \array_pad($callable ?: [null], 2, []);

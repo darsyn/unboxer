@@ -12,8 +12,19 @@ class Unboxer implements UnboxerInterface
         \DateTimeInterface::class => ['format', [\DateTimeInterface::RFC3339]],
         \DateTimeZone::class => ['getName'],
         \Throwable::class => ['getMessage'],
+        \JsonSerializable::class => ['jsonSerialize'],
         ArrayCollection::class => ['toArray'],
     ];
+
+    /**
+     * Extend this class and override this method, remembering to merge parent::getKnownDataMethods(), to expand this
+     * list of known data methods. Try sticking to just native PHP classes/interfaces, or classes defined in extensions.
+     * It is preferable to modify or extend a class to implement UnboxableInterface instead.
+     */
+    protected function getKnownDataMethods(): iterable
+    {
+        return self::$knownDataMethods;
+    }
 
     public function unbox($data)
     {
@@ -35,13 +46,9 @@ class Unboxer implements UnboxerInterface
                 $keys[] = $class;
                 return $this->convertToNativeDataType($data->__unbox(), $keys);
             }
-            if ($interface = $this->hasKnownDataMethod($data)) {
-                try {
-                    $keys[] = $class;
-                    return $this->convertToNativeDataType($this->callKnownDataMethod($data, $interface), $keys);
-                } catch (\LogicException $e) {
-                    // Careful not catch UnboxingExceptions bubbling up.
-                }
+            if ($this->processKnownDataTypes($data)) {
+                $keys[] = $class;
+                return $this->convertToNativeDataType($data, $keys);
             }
             if (static::STRINGIFY_OBJECTS && \method_exists($data, '__toString')) {
                 $keys[] = $class;
@@ -72,35 +79,22 @@ class Unboxer implements UnboxerInterface
         throw new UnboxingException($message, $data, $keys);
     }
 
-    /**
-     * Extend this class and override this method, remembering to call parent::getKnownDataMethods(), to expand this
-     * list of known data methods. Try sticking to just native PHP classes/interfaces, or classes defined in extensions.
-     * It is preferable to modify or extend a class to implement UnboxableInterface instead.
-     */
-    protected function getKnownDataMethods(): array
+    final protected function processKnownDataTypes(&$data): bool
     {
-        return self::$knownDataMethods;
-    }
-
-    final protected function hasKnownDataMethod(object $data): ?string
-    {
-        foreach (\array_keys($this->getKnownDataMethods()) as $interface) {
+        foreach ($this->getKnownDataMethods() as $interface => $callable) {
             if ($data instanceof $interface) {
-                return $interface;
+                if ($callable instanceof \Closure) {
+                    $data = $callable($data);
+                    return true;
+                } elseif (is_array($callable) && count($callable) >= 1) {
+                    [$method, $arguments] = \array_pad($callable, 2, []);
+                    if (\is_callable([$data, $method])) {
+                        $data = \call_user_func_array([$data, $method], $arguments);
+                        return true;
+                    }
+                }
             }
         }
-        return null;
-    }
-
-    final protected function callKnownDataMethod(object $data, string $interface)
-    {
-        $callable = $this->getKnownDataMethods()[$interface] ?? null;
-        [$method, $arguments] = \array_pad($callable ?: [null], 2, []);
-        if (\is_callable([$data, $method])) {
-            return \call_user_func_array([$data, $method], $arguments);
-        }
-        // Error in program logic, attempted to call a method that doesn't exist on the object, throw exception so
-        // that execution can carry on instead of using the return value.
-        throw new \LogicException;
+        return false;
     }
 }

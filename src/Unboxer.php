@@ -2,8 +2,6 @@
 
 namespace Darsyn\Unboxer;
 
-use Doctrine\Common\Collections\ArrayCollection;
-
 class Unboxer implements UnboxerInterface
 {
     public const STRINGIFY_OBJECTS = true;
@@ -13,7 +11,7 @@ class Unboxer implements UnboxerInterface
         \DateTimeZone::class => ['getName'],
         \Throwable::class => ['getMessage'],
         \JsonSerializable::class => ['jsonSerialize'],
-        ArrayCollection::class => ['toArray'],
+        \Doctrine\Common\Collections\Collection::class => ['toArray'],
     ];
 
     /**

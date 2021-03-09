@@ -25,7 +25,7 @@ Object types supported by this library out-of-the-box include:
   string containing the exception message.
 - JSON (objects implementing `JsonSerializable`) which result in the library
   recursively iterating over the JSON data returned.
-- Doctrine array collections (objects implementing `ArrayCollection`) which
+- Doctrine collections (objects implementing `Collection` interface) which
   result in the library iterating over each of the items inside the collection.
 
 Additionally, any user-land object can implement `UnboxableInterface`. Similar
@@ -43,39 +43,45 @@ use Darsyn\Unboxer\Unboxer;
 use Darsyn\Unboxer\UnboxableInterface;
 use Darsyn\Unboxer\UnboxingException;
 
-class Group implements UnboxableInterface
-{
-    private string $name;
-    public function __construct(string $name) {
-        $this->name = $name;
-    }
+class Group implements UnboxableInterface {
+    public function __construct(
+        private string $name
+    ) {}
+
     public function __unbox() {
         return $this->name;
     }
 }
 
 class Options implements \JsonSerializable {
-    private array $options;
-    public function __construct(bool $active, bool $verified, \DateTimeZone $timezone) {
-        $this->options = ['active' => $active, 'verified' => $verified, 'tz' => $timezone];
-    }
+    public function __construct(
+        private bool $active,
+        private bool $verified,
+        private \DateTimeZone $timezone
+    ) {}
+
     public function jsonSerialize() {
-        return $this->options;
+        return [
+            'active' => $this->active,
+            'verified' => $this->verified,
+            'tz' => $this->timezone,
+        ];
     }
 }
 
 class Member implements UnboxableInterface
 {
-    private int $id;
-    private string $username;
     private ArrayCollection $groups;
-    private ?Options $options;
-    public function __construct(int $id, string $username, array $groups = [], ?Options $options = null) {
-        $this->id = $id;
-        $this->username = $username;
+
+    public function __construct(
+        private int $id,
+        private string $username,
+        array $groups = [],
+        private ?Options $options = null
+    ) {
         $this->groups = new ArrayCollection($groups);
-        $this->options = $options;
     }
+
     public function __unbox()
     {
         return [
